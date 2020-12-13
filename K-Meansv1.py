@@ -80,9 +80,14 @@ class K_Means_Clusterer:
                 g3.append(self.labeled_points[i])
 
         #self.centroids[0] = [sum(g1[0])/len(g1), sum(g1[1])/len(g1)]
-        self.centroids[0] = self.getCenter(g1)
-        self.centroids[1] = self.getCenter(g2)
-        self.centroids[2] = self.getCenter(g3)
+        for i in range(len(self.labeled_points)):
+            if self.labeled_points[i][2] == 0:
+                g1.append(self.labeled_points[i])
+            elif self.labeled_points[i][2] == 1:
+                g2.append(self.labeled_points[i])
+            elif self.labeled_points[i][2] == 2:
+                g3.append(self.labeled_points[i])
+
         
 
 km = K_Means_Clusterer()
