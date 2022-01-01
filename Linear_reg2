@@ -1,0 +1,27 @@
+import matplotlib.pyplot as plt
+import random
+#linear regression visualization with constant yint of 0
+#done by following stanford cs229 lecture 2 on youtube
+
+data1 = [[random.randint(i -1, i+1), random.randint(i-1, i +1)] * 1 for i in range(10)]
+dx, dy = zip(*data1)
+weights = [.1 for i in range(len(dx))]
+lr = .001
+while True:
+    plt.scatter(dx, dy)
+    err = 0
+    for i in range(len(dx)):
+        err += ((weights[i]*dx[i]) - dy[i])**2 #error is equal to the sum of guess y minus y
+    err = 1/2 * err
+    print(err)
+    sum_of_diffs_times = 0
+
+    for m in range(len(weights)):
+        sum_of_diffs_times += (dy[m] - (weights[m] * dx[m])) * dx[m]
+    
+    for j in range(len(weights)):
+        weights[j] += (lr * sum_of_diffs_times)
+    plt.plot([i for i in range(len(weights))], [j*weights[j] for j in range(len(weights))])
+    plt.show(block=False)
+    plt.pause(.1)
+    plt.cla()

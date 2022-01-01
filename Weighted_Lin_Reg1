@@ -1,0 +1,58 @@
+import matplotlib.pyplot as plt
+import math
+import random
+#first try doing locally weighted linear regression.
+#This code takes in a x value, and shows the weight line and reg line based on that x.
+#also shows the effect of tau on the output
+#Step 1: pick a x point
+#step 2: take into account "neighbors"/ data points close by
+#plot a line and make a prediction using the line
+dx = [i for i in range(10)]
+dy = [math.atan(i) + 1 for i in range(10)]
+
+class Locally_Weighted_Regression:
+    def __init__(self, x, y):
+        self.theta = []#weights
+        self.xs = x
+        self.ys = y
+        self.tau = .01 #bandwidth/ width of the neighborhood
+        
+    def getWeights(self, x): # passed a point to weight around
+        self.theta = []
+        for i in range(len(self.xs)):
+            self.theta.append(math.exp(-1*(((self.xs[i] - x)**2)/(2*(self.tau**2)))))
+        plt.plot(self.xs, self.theta)
+        plt.scatter(dx, dy)
+
+    def minimize_Func(self):
+        func = 0
+        for i in range(len(self.theta)):
+            func += self.theta[i] * (self.ys[i] - (self.theta[i] * self.xs[i]))**2
+        return func
+
+    def getLine(self):
+        lcs = []
+        for i in range(len(self.theta)):
+            lcs.append([self.xs[i], self.xs[i]*self.theta[i]])
+        return lcs
+
+    def regress(self, x):
+        running = True
+        i = 0
+        while running == True:
+            self.getWeights(x)
+            plt.plot(*zip(*self.getLine()))
+            plt.show(block = False)
+            plt.pause(.1)
+            plt.cla()
+            self.tau += .01 #increase tau to see effect 
+            if i % 40 == 0:
+                print("Tau:>" + str(self.tau))
+                print("\n\n\n")
+                print(self.theta)
+            if i > 1000:
+                break
+            i +=1
+    
+lr = Locally_Weighted_Regression(dx, dy)
+lr.regress(3)#pass in the x you want to predict, 

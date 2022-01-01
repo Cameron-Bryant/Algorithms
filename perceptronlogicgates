@@ -1,0 +1,319 @@
+import math
+import random
+import time
+import msvcrt as kb
+
+dimensions = 40
+#or
+class GameArea:###TODO:> visualization
+    def __init__(self):
+        self.defaultValue = ' '
+        self.gArea = [[self.defaultValue] * (dimensions + 1) for i in range(dimensions + 1)]
+    
+    def clearArea(self):
+        [[self.defaultValue] * (dimensions + 1) for i in range(dimensions + 1)]
+
+    def printArea(self):
+        for i in range(len(self.gArea)):
+            print(*self.gArea[i], sep = ' ')
+        print("\n\n\n")
+
+    def updateAreaWithPos(self, pos, val):
+        self.gArea[pos[1]][pos[0]] = val
+
+    def updateAreaWithPoints(self, points, val):
+        for i in range(len(points)):
+            self.gArea[points[i][1]][points[i][0]] = val
+
+
+def genInputs(n):#OR and AND take 2 inputs
+    iputs = [[random.randint(0, 1), random.randint(0, 1)] * 1 for i in range(n)]
+    iputs[0] =[1 ,1]
+    return iputs
+
+def genNOTInputs(n):#NOT takes 1 input
+    ninps = [random.randint(0, 1) for i in range(n)]
+    return ninps
+training_inputs = genInputs(1000)
+testing_inputs = genInputs(100)
+NOT_training_inputs = genNOTInputs(1000)
+NOT_testing_inputs = genNOTInputs(100)
+
+
+class ORPercep:
+    def __init__(self): #(x, y) value for input. OR Perceptron
+        self.input = [1, 0, 0]
+        print(self.input)
+        self.realOutput = self.genOutput(self.input)
+        self.StepOutput = None
+        self.weights = [1, random.uniform(0, 1), random.uniform(0, 1)]
+        self.lr = .01
+
+    def genOutput(self, inp):
+        if inp[1] == 1 or inp[2] == 1:
+            return 1
+        else:
+            return 0
+
+    def signFunction(self, num):
+        if (num > 0):
+            return 1
+        else:
+            return 0
+
+    def calcActualOutput(self):
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1]) + (self.weights[2] * self.input[2])
+        self.StepOutput = self.signFunction(weightedSum)#output = weightted sum ran through an activation func
+        #print("Weighted Sum:>" + str(weightedSum))
+        
+    def updateWeights(self): 
+        #figure out the real output to be able to change weights accordingly
+        self.realOutput = self.genOutput(self.input)
+        pw0 = self.weights[0]
+        pw1 = self.weights[1]
+        pw2 = self.weights[2]
+        
+        self.weights[0] = pw0 + (self.lr * (self.realOutput - self.StepOutput) * self.input[0])
+        self.weights[1] = pw1 + (self.lr * (self.realOutput - self.StepOutput) * self.input[1])
+        self.weights[2] = pw2 + (self.lr * (self.realOutput - self.StepOutput) * self.input[2])
+
+    def train(self, x, x1):
+        its = 0
+        self.StepOutput = None
+        self.input = [1, x, x1]
+        
+        if self.StepOutput != self.realOutput:
+            while self.StepOutput != self.realOutput:
+                self.calcActualOutput()
+                self.updateWeights()
+                its += 1
+                print("weights" + str(self.weights))
+        else:
+            print("----Found----")
+            print("Desired Output:>" + str(self.realOutput))
+            print("Guess:>" + str(self.StepOutput))
+            print("Weights:>" + str(self.weights))
+            print("its:>" + str(its))
+            return self.StepOutput
+        print("\n")
+
+    def withoutRealOut(self,x0, x1):#returns with the weights and does not update
+        self.input = [1, x0, x1]
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1]) + (self.weights[2] * self.input[2])
+        self.StepOutput = self.signFunction(weightedSum)
+        return self.StepOutput
+        
+p = ORPercep()
+
+class ANDPercep:
+    def __init__(self): #(x, y) value for input. AND Perceptron
+        self.input = [1, 0, 0]
+        print(self.input)
+        self.realOutput = self.genOutput(self.input)
+        self.StepOutput = None
+        self.weights = [1, random.uniform(0, 1), random.uniform(0, 1)]
+        self.lr = .01
+
+    def genOutput(self, inp): #[1, 1] return 1
+        if inp[1] == 1 and inp[2] == 1:
+            return 1
+        else:
+            return 0
+
+    def signFunction(self, num):
+        if (num > 0):
+            return 1
+        else:
+            return 0
+
+    def calcActualOutput(self):
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1]) + (self.weights[2] * self.input[2])
+        self.StepOutput = self.signFunction(weightedSum)#output = weightted sum ran through an activation func
+        #print("Weighted Sum:>" + str(weightedSum))
+        
+    def updateWeights(self): 
+        #figure out the real output to be able to change weights accordingly
+        self.realOutput = self.genOutput(self.input)
+        pw0 = self.weights[0]
+        pw1 = self.weights[1]
+        pw2 = self.weights[2]
+        #weights[i] = pwI + (learning rate * (desired_output[i] - guess) * input[i]
+        self.weights[0] = pw0 + (self.lr * (self.realOutput - self.StepOutput) * self.input[0])
+        self.weights[1] = pw1 + (self.lr * (self.realOutput - self.StepOutput) * self.input[1])
+        self.weights[2] = pw2 + (self.lr * (self.realOutput - self.StepOutput) * self.input[2])
+
+    def train(self, x, x1):
+        its = 0
+        self.StepOutput = None
+        self.input = [1, x, x1]
+
+        if self.StepOutput != self.realOutput:
+            while self.StepOutput != self.realOutput:
+                self.calcActualOutput()
+                self.updateWeights()
+                its += 1
+                print("weights" + str(self.weights))
+        else:
+            print("----Found----")
+            print("Desired Output:>" + str(self.realOutput))
+            print("Guess:>" + str(self.StepOutput))
+            print("Weights:>" + str(self.weights))
+            print("its:>" + str(its))
+            return self.StepOutput
+
+    def withoutRealOut(self,x0, x1):#returns with the weights and does not update
+        self.input = [1, x0, x1]
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1]) + (self.weights[2] * self.input[2])
+        self.StepOutput = self.signFunction(weightedSum)
+        return self.StepOutput
+
+a = ANDPercep()
+class NOTPercep:
+    def __init__(self): #(x, y) value for input. AND Perceptron
+        self.input = [1, 0]
+        print(self.input)
+        self.realOutput = self.genOutput(self.input)
+        self.StepOutput = None
+        self.weights = [1, random.uniform(0, 1)]
+        self.lr = .01
+
+    def genOutput(self, inp): #inverse
+        if inp[1] == 0:
+            return 1
+        else:
+            return 0
+
+    def signFunction(self, num):
+        if (num > 0):
+            return 1
+        else:
+            return 0
+
+    def calcActualOutput(self):
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1]) 
+        self.StepOutput = self.signFunction(weightedSum)#output = weightted sum ran through an activation func
+        #print("Weighted Sum:>" + str(weightedSum))
+        
+    def updateWeights(self): 
+        #figure out the real output to be able to change weights accordingly
+        self.realOutput = self.genOutput(self.input)
+        pw0 = self.weights[0]
+        pw1 = self.weights[1]
+        
+        #weights[i] = pwI + (learning rate * (desired_output[i] - guess) * input[i]
+        self.weights[0] = pw0 + (self.lr * (self.realOutput - self.StepOutput) * self.input[0])
+        self.weights[1] = pw1 + (self.lr * (self.realOutput - self.StepOutput) * self.input[1])
+        
+
+    def train(self, x):
+        its = 0
+        self.StepOutput = None
+        self.input = [1, x]
+        
+        if self.StepOutput != self.realOutput:
+            while self.StepOutput != self.realOutput:
+                self.calcActualOutput()
+                self.updateWeights()
+                its += 1
+                print("weights" + str(self.weights))
+        else:
+            print("----Found----")
+            print("Desired Output:>" + str(self.realOutput))
+            print("Guess:>" + str(self.StepOutput))
+            print("Weights:>" + str(self.weights))
+            print("its:>" + str(its))
+            return self.StepOutput
+
+    def withoutRealOut(self, x0):#returns with the weights and does not update
+        self.input = [1, x0]
+        weightedSum = (self.input[0]*self.weights[0]) + (self.input[1] * self.weights[1])
+        self.StepOutput = self.signFunction(weightedSum)
+
+        return self.StepOutput
+
+n = NOTPercep()
+#Train all 3 against training set. If wanting to do visualization put it in here
+for v in range(len(training_inputs)):
+    a.train(training_inputs[v][0], training_inputs[v][1])
+    p.train(training_inputs[v][0], training_inputs[v][1])
+    n.train(NOT_training_inputs[v])
+
+print("TRAINED")
+#double check with test set
+for k in range(len(testing_inputs)):
+    print([testing_inputs[k][0], testing_inputs[k][1]])
+    aGuessWOut = a.withoutRealOut(testing_inputs[k][0], testing_inputs[k][1])
+
+    pGuessWOut = p.withoutRealOut(testing_inputs[k][0], testing_inputs[k][1])
+    print(NOT_training_inputs[k])
+    nGuessWOut = n.withoutRealOut(NOT_training_inputs[k])
+
+def gateInterface(x1, x2): #check out different logic gates through this
+    ANDGuess = a.withoutRealOut(x1, x2)
+    ORGuess = p.withoutRealOut(x1, x2)
+    NOTGuess0 = n.withoutRealOut(x1)   
+    NOTGuess1 = n.withoutRealOut(x2)
+    print("AND:>" + str(ANDGuess))
+    print("OR:>" + str(ORGuess))
+    print("NOT[0] of your response:>" + str(NOTGuess0))
+    print("NOT[1] of your response:>" + str(NOTGuess1))
+
+def doGateInterface():
+    running = True
+    while running == True:
+        UserInp = input(":>")
+        if (UserInp == "x"):
+            running = False
+        elif (len(UserInp.split()) == 2):
+            gateInterface(int(UserInp.split()[0]), int(UserInp.split()[1]))
+        else:
+            print("Press x to exit the Gate Interface \nor enter 2 numbers, (1 or 0) to get the perceptron's logic results")
+#doGateInterface()
+#XOR Steps. Perceps: AND, AND2, NOT, and OR
+#Step 1. x1, x2 -> AND. x1, x2 -> OR
+#Step 2. AND outputs to NOT
+#Step 3. OR outputs to AND2. NOT outputs to AND2
+#Step 4. AND outputs answer
+#XOR:> a or b but not a and b
+#XOR Vals: 
+    #1 0 -> 1
+    #1 1 -> 0
+    #0 0 -> 0
+    #0 1 -> 1
+
+def printXORHelpPage():
+    print("---Help---And---Details")
+    print("XOR Logic Gate (Exclusive OR)")
+    print("a or b, but not a and b")
+    print("4 Steps:")
+    print("Step 1. x1, x2 -> AND. x1, x2 -> OR")
+    print("2. AND outputs to NOT")
+    print("OR outputs to AND2. NOT outputs to AND2")
+    print("Step 4. AND outputs answer")
+    print("\n")
+    print("around 300 lines uncondensed. Work in progress")
+
+def XOR(x1, x2):
+    First_And_Output = a.withoutRealOut(x1, x2)
+    OR_output =p.withoutRealOut(x1, x2)
+    NOT_Output = n.withoutRealOut(First_And_Output)
+    XOR_output = a.withoutRealOut(NOT_Output, OR_output)
+    return XOR_output
+def doXOR():
+    running = True
+    print("\n\n\n------------XOR--------")
+    print("XOR Logic using a simple neural net of perceptrons")
+    print("Enter h for help and details")
+    while running == True:
+        inp = input(":>")
+        if inp == "x":
+            running = False
+        elif (len(inp.split()) == 2):
+            print(XOR(int(inp.split()[0]), int(inp.split()[1])))
+        elif (inp == "h"):
+            printXORHelpPage()
+        else:
+            print("Press h for help and details\nEnter x to exit the XOR calculator\nor enter 2 numbers (1 or 0) seperated by a space")
+        time.sleep(.1)
+
+doXOR()
